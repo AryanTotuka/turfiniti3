@@ -1,0 +1,56 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is an owner
+    function isOwner() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    // Helper: Validate Booking Data Structure
+    function isValidBooking() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['venueId', 'date', 'totalPrice', 'slots']) &&
+             data.totalPrice is number &&
+             data.totalPrice >= 0 &&
+             data.slots is list &&
+             data.slots.size() > 0 &&
+             data.slots.size() <= 10; // Max 10 slots per booking to prevent abuse
+    }
+
+    // Helper: Validate User Profile
+    function isValidUser() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['email', 'role']) &&
+             (data.role == 'player' || data.role == 'owner');
+    }
+
+    // Users collection: Users can read/write their own profile
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser();
+      allow update: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Bookings collection
+    match /bookings/{bookingId} {
+      // Allow read access to EVERYONE (including guests) so they can see which slots are booked (red)
+      allow read: if true;
+      
+      // Allow creation if signed in and data is valid
+      allow create: if isSignedIn() && isValidBooking();
+      
+      // Allow updates/deletes if user owns the booking OR is an owner
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isOwner());
+    }
+    
+    // Catch-all
+    match /{document=**} {
+      allow read, write: if false; 
+    }
+  }
+}
