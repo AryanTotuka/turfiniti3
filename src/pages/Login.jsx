@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase';
 import { User, Store } from 'lucide-react';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
 
@@ -30,20 +27,13 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Check if user has a profile doc
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                console.log("Logged in user role:", userData.role);
-            }
+            const loggedInUser = await login(email, password);
+            console.log("Logged in user role:", loggedInUser.role);
 
             if (location.state?.from && location.state?.bookingData) {
                 navigate(location.state.from, { state: location.state.bookingData });
             } else {
-                navigate(role === 'owner' ? '/owner-dashboard' : '/');
+                navigate(loggedInUser.role === 'owner' ? '/owner-dashboard' : '/');
             }
 
         } catch (err) {

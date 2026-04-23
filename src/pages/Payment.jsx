@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useVenue } from '../context/VenueContext';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import api from '../api';
 import { CheckCircle, CreditCard, Smartphone, ShieldCheck } from 'lucide-react';
 import { sendBookingConfirmation } from '../utils/emailService';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
@@ -60,7 +59,7 @@ export default function Payment() {
                 venueId: state.venueId,
                 venueName: state.venueName,
                 date: state.date,
-                slots: state.slots, // Array of slots
+                slots: state.slots,
                 totalPrice: state.totalPrice,
                 sport: state.sport || 'General',
                 userId: user?.uid || user?.id || user?.email || 'guest',
@@ -69,12 +68,11 @@ export default function Payment() {
                 userPhone: user?.phone || 'N/A',
                 paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Card',
                 status: 'confirmed',
-                bookingDisplayId: bookingDisplayId,
-                createdAt: serverTimestamp()
+                bookingDisplayId: bookingDisplayId
             };
 
-            // Save to Firestore
-            await addDoc(collection(db, "bookings"), bookingData);
+            // Save to DB
+            await api.post('/bookings', bookingData);
 
             // Also update local context for immediate UI feedback
             addBooking(bookingData);

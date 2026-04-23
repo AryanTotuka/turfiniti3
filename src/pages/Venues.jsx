@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Search, Filter } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { venues } from '../data/venues';
+import { useVenue } from '../context/VenueContext';
 
 export default function Venues() {
     const location = useLocation();
+    const { venues, loadingVenues } = useVenue();
     const [selectedSport, setSelectedSport] = useState(location.state?.sport || "All Sports");
     const [searchQuery, setSearchQuery] = useState(location.state?.location || "");
-    const [filteredVenues, setFilteredVenues] = useState(venues);
+    const [filteredVenues, setFilteredVenues] = useState([]);
     const [title, setTitle] = useState("All Venues");
 
     useEffect(() => {
         handleApplyFilters();
-    }, []); // Run once on mount to apply initial filters from navigation state
+    }, [venues]); // Run when venues load or change
 
     const handleApplyFilters = () => {
         let filtered = venues;
@@ -83,7 +84,11 @@ export default function Venues() {
                 <div style={{ flex: '3 1 600px' }}>
                     <h1 style={{ marginBottom: '1.5rem', fontSize: '2rem' }}>{title}</h1>
 
-                    {filteredVenues.length === 0 ? (
+                    {loadingVenues ? (
+                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                            Loading venues...
+                        </div>
+                    ) : filteredVenues.length === 0 ? (
                         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                             No venues found for the selected filter.
                         </div>
@@ -98,7 +103,7 @@ export default function Venues() {
                                     boxShadow: 'var(--shadow-sm)'
                                 }}>
                                     <div style={{ height: '180px', overflow: 'hidden' }}>
-                                        <img src={venue.image} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80&w=800"} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </div>
                                     <div style={{ padding: '1.25rem' }}>
                                         <div style={{ marginBottom: '0.5rem' }}>

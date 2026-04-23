@@ -3,13 +3,11 @@ import { Link } from 'react-router-dom';
 import { Calendar, IndianRupee, Users, Clock, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useVenue } from '../context/VenueContext';
-import { collection, query, where, getDocs, orderBy, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { venues } from '../data/venues';
+import api from '../api';
 
 export default function OwnerDashboard() {
     const { user } = useAuth();
-    const { isSlotBlocked, blockSlot, unblockSlot, isSlotBooked, cancelBooking: localCancelBooking } = useVenue(); // Keep slot management in context for now as it handles blocking logic differently
+    const { isSlotBlocked, blockSlot, unblockSlot, isSlotBooked, cancelBooking: localCancelBooking, venues, loadingVenues } = useVenue(); // Keep slot management in context for now as it handles blocking logic differently
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,26 +45,14 @@ export default function OwnerDashboard() {
         const fetchBookings = async () => {
             setLoading(true);
             try {
-                // Query bookings for this venue
-                // We remove orderBy for now to avoid specific index requirements on a demo project
-                // and verify if "where" clause works. We can sort client-side.
-                // Reverting to specific query as "fetch all" is blocked by permissions
-                const q = query(
-                    collection(db, "bookings"),
-                    where("venueId", "==", managedVenueId)
-                );
-
-                const querySnapshot = await getDocs(q);
-                const fetchedBookings = [];
-                querySnapshot.forEach((doc) => {
-                    fetchedBookings.push({ id: doc.id, ...doc.data() });
-                });
+                // Backend API automatically filters by owner's managed venues
+                const res = await api.get('/bookings');
+                const fetchedBookings = res.data.map(b => ({ ...b, id: b._id }));
 
                 // Client-side sort
                 fetchedBookings.sort((a, b) => {
-                    // sort by createdAt desc if available, else date
-                    const tA = a.createdAt?.seconds || 0;
-                    const tB = b.createdAt?.seconds || 0;
+                    const tA = new Date(a.createdAt).getTime();
+                    const tB = new Date(b.createdAt).getTime();
                     return tB - tA;
                 });
 
@@ -132,13 +118,13 @@ export default function OwnerDashboard() {
         if (!window.confirm("Are you sure you want to cancel this booking? This action cannot be undone.")) return;
 
         try {
-            await deleteDoc(doc(db, "bookings", bookingId));
+            await api.put(`/bookings/${bookingId}/cancel`);
             // Update local state is handled by re-fetch or manual filter
-            setBookings(prev => prev.filter(b => b.id !== bookingId));
+            setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'cancelled' } : b));
             localCancelBooking(bookingId);
             alert("Booking cancelled successfully.");
         } catch (err) {
-            console.error("Error deleting booking:", err);
+            console.error("Error cancelling booking:", err);
             alert("Failed to cancel booking");
         }
     };
@@ -163,7 +149,8 @@ export default function OwnerDashboard() {
         <div className="section container" style={{ paddingTop: '8rem', minHeight: '100vh' }}>
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Partner Dashboard</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {user.name} ({venueName})</p>
+                <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {user.name} {venueName ? `(${venueName})` : ''}</p>
+                {loadingVenues && <p style={{ color: 'var(--text-secondary)' }}>Loading venues...</p>}
             </div>
 
             {/* Stats Cards */}

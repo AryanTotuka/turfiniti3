@@ -2,18 +2,31 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { MapPin, Star, Wifi, Car, Coffee, Shield } from 'lucide-react';
 import BookingWidget from '../components/BookingWidget';
-import { venues } from '../data/venues';
+import { useVenue } from '../context/VenueContext';
 
 export default function VenueDetails() {
     const { id } = useParams();
-    const venue = venues.find(v => v.id === parseInt(id)) || venues[0];
+    const { venues, loadingVenues } = useVenue();
+    
+    // Find venue but ensure venues is loaded first. We use id as string since MongoDB uses ObjectId usually.
+    const venue = venues.find(v => String(v.id) === String(id));
 
-    const [selectedSport, setSelectedSport] = useState(venue.sports[0]);
+    const [selectedSport, setSelectedSport] = useState(venue?.sports?.[0] || null);
 
     // Update selected sport if venue changes (e.g. navigation)
     useEffect(() => {
-        setSelectedSport(venue.sports[0]);
+        if (venue && venue.sports && venue.sports.length > 0) {
+            setSelectedSport(venue.sports[0]);
+        }
     }, [venue]);
+
+    if (loadingVenues) {
+        return <div className="section container" style={{ paddingTop: '8rem', textAlign: 'center' }}>Loading venue details...</div>;
+    }
+
+    if (!venue) {
+        return <div className="section container" style={{ paddingTop: '8rem', textAlign: 'center' }}>Venue not found.</div>;
+    }
 
     return (
         <div className="section container" style={{ paddingTop: '8rem' }}>
@@ -38,14 +51,14 @@ export default function VenueDetails() {
                     {/* Image Gallery */}
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', height: '400px', marginBottom: '2rem', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                         <div style={{ background: '#f0f0f0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <img src={venue.images[0]} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Main view" />
+                            <img src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80"} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Main view" />
                         </div>
                         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '1rem' }}>
                             <div style={{ background: '#f0f0f0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                <img src={venue.images[1] || venue.image} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Side view 1" />
+                                <img src={venue.images?.[1] || venue.image || "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80"} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Side view 1" />
                             </div>
                             <div style={{ background: '#f0f0f0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                                <img src={venue.images[2] || venue.image} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Side view 2" />
+                                <img src={venue.images?.[2] || venue.image || "https://images.unsplash.com/photo-1626245367375-397a22ae75b7?auto=format&fit=crop&q=80"} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Side view 2" />
                             </div>
                         </div>
                     </div>
@@ -60,7 +73,7 @@ export default function VenueDetails() {
                     </div>
 
                     {/* Sport Selection if multiple */}
-                    {venue.sports.length > 1 && (
+                    {venue.sports && venue.sports.length > 1 && selectedSport && (
                         <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                             <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Select Sport</h3>
                             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
@@ -107,15 +120,16 @@ export default function VenueDetails() {
                     </div>
                 </div>
 
-                {/* Sidebar / Booking */}
                 <aside>
-                    <div style={{ position: 'sticky', top: '100px' }}>
-                        <BookingWidget pricePerHour={selectedSport.price} venueId={venue.id} venue={venue} sportType={selectedSport.type} />
-                        <div style={{ marginTop: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '0.5rem' }}><strong>Sport:</strong> {selectedSport.type}</p>
-                            <p>Price calculated based on selected sport.</p>
+                    {selectedSport && (
+                        <div style={{ position: 'sticky', top: '100px' }}>
+                            <BookingWidget pricePerHour={selectedSport.price} venueId={venue.id} venue={venue} sportType={selectedSport.type} />
+                            <div style={{ marginTop: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                <p style={{ marginBottom: '0.5rem' }}><strong>Sport:</strong> {selectedSport.type}</p>
+                                <p>Price calculated based on selected sport.</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </aside>
 
             </div>

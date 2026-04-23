@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { User, Mail, Phone, Save, X, Edit2 } from 'lucide-react';
+import api from '../api';
 
 export default function MyProfile() {
     const { user, loading: authLoading } = useAuth();
@@ -37,10 +36,8 @@ export default function MyProfile() {
         setMessage({ type: '', text: '' });
 
         try {
-            const userRef = doc(db, "users", user.uid || user.id);
-
-            // Update Firestore
-            await updateDoc(userRef, {
+            // Update Backend
+            await api.put('/auth/me', {
                 name: formData.name,
                 phone: formData.phone
             });

@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Clock, MapPin, IndianRupee, XCircle, AlertCircle } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
+import api from '../api';
 
 export default function MyBookings() {
     const { user } = useAuth();
@@ -18,19 +17,8 @@ export default function MyBookings() {
             // Repetitive code, but ensuring we have the full component logic right
             setLoading(true);
             try {
-                // Query bookings where userId matches current user
-                const q = query(
-                    collection(db, "bookings"),
-                    where("userId", "==", user.uid || user.id || user.email)
-                    // orderBy("createdAt", "desc") // Temporarily removed
-                );
-
-                const querySnapshot = await getDocs(q);
-                const fetchedBookings = [];
-                querySnapshot.forEach((doc) => {
-                    fetchedBookings.push({ id: doc.id, ...doc.data() });
-                });
-                setBookings(fetchedBookings);
+                const res = await api.get('/bookings');
+                setBookings(res.data);
             } catch (error) {
                 console.error("Error fetching bookings:", error);
             } finally {
@@ -52,15 +40,12 @@ export default function MyBookings() {
     const handleCancel = async (id) => {
         if (window.confirm("Are you sure you want to cancel this booking?")) {
             try {
-                // Update status in Firestore instead of deleting
-                const bookingRef = doc(db, "bookings", id);
-                await updateDoc(bookingRef, {
-                    status: 'cancelled'
-                });
+                // Update status in Backend instead of Firebase
+                await api.put(`/bookings/${id}/cancel`);
 
                 // Update local list to reflect change immediately
                 setBookings(bookings.map(b =>
-                    b.id === id ? { ...b, status: 'cancelled' } : b
+                    (b._id === id || b.id === id) ? { ...b, status: 'cancelled' } : b
                 ));
 
                 // Sync context if needed (optional since we rely on firestore now)

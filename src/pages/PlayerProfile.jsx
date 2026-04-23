@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { User, Phone, Mail, Calendar } from 'lucide-react';
+import api from '../api';
 
 export default function PlayerProfile() {
     const { id } = useParams();
@@ -25,18 +24,11 @@ export default function PlayerProfile() {
                     setLoading(false);
                     return;
                 }
-
-                const docRef = doc(db, "users", id);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    setPlayer({ id: docSnap.id, ...docSnap.data() });
-                } else {
-                    console.error("No such user document!");
-                    setPlayer(null);
-                }
+                const res = await api.get(`/auth/users/${id}`);
+                setPlayer({ id: res.data._id, ...res.data });
             } catch (error) {
                 console.error("Error fetching player:", error);
+                setPlayer(null);
             } finally {
                 setLoading(false);
             }
@@ -118,7 +110,7 @@ export default function PlayerProfile() {
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Member Since</p>
                             <p style={{ fontWeight: 500 }}>
                                 {player.createdAt
-                                    ? new Date(player.createdAt.seconds * 1000).toLocaleDateString()
+                                    ? new Date(player.createdAt).toLocaleDateString()
                                     : 'N/A'}
                             </p>
                         </div>

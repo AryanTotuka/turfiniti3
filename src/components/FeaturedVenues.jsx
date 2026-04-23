@@ -1,11 +1,15 @@
 import { MapPin, Users, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-import { venues } from '../data/venues';
+import { useVenue } from '../context/VenueContext';
 
 export default function FeaturedVenues() {
+    const { venues, loadingVenues } = useVenue();
+    
     // Show only high-rated venues, including the multi-sport one
-    const featuredVenues = venues.filter(v => v.rating >= 4.7).slice(0, 3);
+    const featuredVenues = venues.filter(v => (v.rating || 0) >= 4.7).slice(0, 3);
+    
+    // If no venues are technically 4.7 yet, fallback to any top 3
+    const displayVenues = featuredVenues.length > 0 ? featuredVenues : venues.slice(0, 3);
 
     return (
         <section id="venues" className="section container">
@@ -18,7 +22,9 @@ export default function FeaturedVenues() {
             </div>
 
             <div className="grid-3">
-                {featuredVenues.map((venue) => (
+                {loadingVenues ? (
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>Loading featured venues...</div>
+                ) : displayVenues.map((venue) => (
                     <div key={venue.id} style={{
                         border: '1px solid var(--border-color)',
                         borderRadius: 'var(--radius-lg)',
@@ -38,7 +44,7 @@ export default function FeaturedVenues() {
                     >
                         {/* Image Box */}
                         <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
-                            <img src={venue.image} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80"} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <div style={{
                                 position: 'absolute',
                                 top: '1rem',
@@ -71,7 +77,7 @@ export default function FeaturedVenues() {
                                             padding: '2px 6px',
                                             borderRadius: '4px'
                                         }}>
-                                            {sport.type}
+                                            {sport.type || sport}
                                         </span>
                                     ))}
                                 </div>
@@ -87,7 +93,7 @@ export default function FeaturedVenues() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                                        ₹{Math.min(...venue.sports.map(s => s.price))}
+                                        ₹{venue.sports && venue.sports.length > 0 ? Math.min(...venue.sports.map(s => s.price || 0)) : (venue.pricePerHour || 0)}
                                     </span>
                                     <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>/hr</span>
                                 </div>

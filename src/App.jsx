@@ -12,6 +12,7 @@ import PartnerWithUs from './pages/PartnerWithUs';
 import RefundPolicy from './pages/RefundPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ManageTurfs from './pages/ManageTurfs';
 import MyBookings from './pages/MyBookings';
 import PlayerProfile from './pages/PlayerProfile';
 import MyProfile from './pages/MyProfile';
@@ -19,18 +20,7 @@ import Footer from './components/Footer';
 import { AuthProvider } from './context/AuthContext';
 import { VenueProvider } from './context/VenueContext';
 
-import { useEffect } from 'react';
-import { seedDemoUser } from './utils/seedDemoUser';
-import { seedDemoPlayer } from './utils/seedDemoPlayer';
-import { seedJaipurOwner } from './utils/seedJaipurOwner';
-
 function App() {
-  useEffect(() => {
-    // seedDemoUser();
-    // seedDemoPlayer();
-    // seedJaipurOwner();
-  }, []);
-
   return (
     <Router>
       <AuthProvider>
@@ -52,6 +42,7 @@ function App() {
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/admin/turfs" element={<ManageTurfs />} />
             </Routes>
 
             {/* Footer */}

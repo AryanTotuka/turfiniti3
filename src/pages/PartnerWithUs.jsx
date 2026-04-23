@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle, Handshake, TrendingUp, Users, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import api from '../api';
 
 export default function PartnerWithUs() {
     const [formData, setFormData] = useState({
@@ -20,14 +19,10 @@ export default function PartnerWithUs() {
         setError(null);
 
         try {
-            await addDoc(collection(db, "partner_requests"), {
-                ...formData,
-                createdAt: serverTimestamp(),
-                status: 'new'
-            });
+            await api.post('/partners', formData);
             setIsSubmitted(true);
         } catch (err) {
-            console.error("Error adding document: ", err);
+            console.error("Error submitting partner request:", err);
             setError(`Error: ${err.message}`);
         } finally {
             setIsLoading(false);

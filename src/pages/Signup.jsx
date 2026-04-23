@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase';
 import { User, Store } from 'lucide-react';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
 
 export default function Signup() {
     const [role, setRole] = useState('player');
-    const { login } = useAuth();
+    const { register } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -22,47 +19,36 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
 
     const handleSignup = async (e) => {
-        // Rate Limit Check
-        if (!checkRateLimit('signup_attempt', 3, 3600000)) { // 3 signups per hour (prevent mass account creation)
-            const remaining = Math.ceil(getRateLimitResetTime('signup_attempt', 3600000) / 60000); // Show in minutes
-            setError(`Too many account creation attempts. Please wait ${remaining} minutes.`);
-            return;
-        }
+        // Rate Limit Check (Disabled for testing)
+        // if (!checkRateLimit('signup_attempt', 3, 3600000)) { 
+        //     const remaining = Math.ceil(getRateLimitResetTime('signup_attempt', 3600000) / 60000);
+        //     setError(`Too many account creation attempts. Please wait ${remaining} minutes.`);
+        //     return;
+        // }
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            // 1. Create User in Firebase Auth
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // 2. Prepare User Data
             const userData = {
-                uid: user.uid,
                 name: role === 'player' ? name : businessName,
                 email: email,
+                password: password,
                 phone: phone,
-                role: role,
-                createdAt: serverTimestamp()
+                role: role
             };
 
-            // 3. Save to Firestore
-            await setDoc(doc(db, "users", user.uid), userData);
+            await register(userData);
 
-            // 4. Update Local Auth Context (Optional: AuthContext should ideally listen to onAuthStateChanged)
-            login(userData);
-
-            // 5. Redirect
             if (location.state?.from && location.state?.bookingData) {
                 navigate(location.state.from, { state: location.state.bookingData });
             } else {
-                navigate('/');
+                navigate(role === 'owner' ? '/owner-dashboard' : '/');
             }
 
         } catch (err) {
             console.error("Signup Error:", err);
-            setError(err.message);
+            setError(err.response?.data?.msg || err.message);
         } finally {
             setLoading(false);
         }

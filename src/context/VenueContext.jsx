@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { db } from '../firebase';
+import api from '../api';
 
 const VenueContext = createContext(null);
 
@@ -13,41 +12,69 @@ export const VenueProvider = ({ children }) => {
     // structure: { [venueId]: { [sport]: { [date]: ["09:00 AM"] } } }
     const [bookings, setBookings] = useState({});
     const [bookingsList, setBookingsList] = useState([]);
+    
+    // Venues state
+    const [venues, setVenues] = useState([]);
+    const [loadingVenues, setLoadingVenues] = useState(true);
 
-    // Fetch Bookings Realtime
+    const fetchVenues = async () => {
+        try {
+            setLoadingVenues(true);
+            const res = await api.get('/venues');
+            // If API fails or is empty, we would set an empty array.
+            // For transition, we could fallback to static venues if needed, but let's stick to API only since we are building dynamic mgmt.
+            // The API response will contain _id as string. Let's map it to id for frontend compatibility.
+            const fetchedVenues = res.data.map(v => ({ ...v, id: v._id || v.id }));
+            setVenues(fetchedVenues);
+        } catch (error) {
+            console.error("Error fetching venues:", error);
+        } finally {
+            setLoadingVenues(false);
+        }
+    };
+
     useEffect(() => {
-        const q = query(collection(db, "bookings"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const newBookingsMap = {};
-            const newBookingsList = [];
+        fetchVenues();
+    }, []);
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const booking = { id: doc.id, ...data };
-                newBookingsList.push(booking);
+    // Fetch Bookings from API
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const res = await api.get('/bookings/public');
+                const newBookingsMap = {};
+                const newBookingsList = [];
 
-                // Populate lookup map for O(1) access
-                if (data.venueId && data.date && data.slots && data.status !== 'cancelled') {
-                    const vId = Number(data.venueId) || data.venueId;
-                    // Default to "General" or first available if legacy
-                    const sport = data.sport || "General";
+                res.data.forEach((data) => {
+                    const booking = { id: data._id, ...data };
+                    newBookingsList.push(booking);
 
-                    if (!newBookingsMap[vId]) newBookingsMap[vId] = {};
-                    if (!newBookingsMap[vId][sport]) newBookingsMap[vId][sport] = {};
-                    if (!newBookingsMap[vId][sport][data.date]) newBookingsMap[vId][sport][data.date] = [];
+                    // Populate lookup map for O(1) access
+                    if (data.venueId && data.date && data.slots && data.status !== 'cancelled') {
+                        const vId = String(data.venueId);
+                        // Default to "General" or first available if legacy
+                        const sport = data.sport || "General";
 
-                    newBookingsMap[vId][sport][data.date].push(...data.slots);
-                }
-            });
+                        if (!newBookingsMap[vId]) newBookingsMap[vId] = {};
+                        if (!newBookingsMap[vId][sport]) newBookingsMap[vId][sport] = {};
+                        if (!newBookingsMap[vId][sport][data.date]) newBookingsMap[vId][sport][data.date] = [];
 
-            console.log("Bookings Map Updated:", newBookingsMap);
-            setBookings(newBookingsMap);
-            setBookingsList(newBookingsList);
-        }, (error) => {
-            console.error("Error fetching bookings:", error);
-        });
+                        newBookingsMap[vId][sport][data.date].push(...data.slots);
+                    }
+                });
 
-        return () => unsubscribe();
+                console.log("Bookings Map Updated from API:", newBookingsMap);
+                setBookings(newBookingsMap);
+                setBookingsList(newBookingsList);
+            } catch (error) {
+                console.error("Error fetching bookings:", error);
+            }
+        };
+
+        fetchBookings();
+        // Poll every 30 seconds for live-like updates
+        const interval = setInterval(fetchBookings, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const blockSlot = (venueId, date, slot) => {
@@ -130,6 +157,9 @@ export const VenueProvider = ({ children }) => {
 
     return (
         <VenueContext.Provider value={{
+            venues,
+            loadingVenues,
+            refreshVenues: fetchVenues,
             blockedSlots,
             bookings,
             bookingsList,

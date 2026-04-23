@@ -1,7 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { auth, db } from '../firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
@@ -10,62 +8,68 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            if (currentUser) {
-                // Fetch user role and details from Firestore
+        const checkAuth = async () => {
+            if (localStorage.getItem('token')) {
                 try {
-                    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                    if (userDoc.exists()) {
-                        setUser({
-                            ...userDoc.data(),
-                            id: currentUser.uid, // Ensure id is always set
-                            uid: currentUser.uid, // Alias for consistency
-                            email: currentUser.email
-                        });
-                    } else {
-                        // Profile doesn't exist? (Shouldn't happen with correct signup)
-                        setUser({
-                            uid: currentUser.uid,
-                            email: currentUser.email,
-                            name: currentUser.displayName || 'User',
-                            role: 'player' // default fallback
-                        });
-                    }
+                    const res = await api.get('/auth/me');
+                    setUser({
+                        ...res.data,
+                        id: res.data._id,
+                        uid: res.data._id
+                    });
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
-                    // Still set user basic info even if profile fetch fails
-                    setUser({
-                        uid: currentUser.uid,
-                        email: currentUser.email
-                    });
+                    localStorage.removeItem('token');
+                    setUser(null);
                 }
             } else {
                 setUser(null);
             }
             setLoading(false);
-        });
+        };
 
-        return unsubscribe;
+        checkAuth();
     }, []);
 
-    const login = (userData) => {
-        // This is now legacy/mock. 
-        // Real login happens via firebase/auth and the listener will pick it up.
-        // We can keep it for now as a fallback or remove it.
-        // For compatibility with existing calls, we just log.
-        console.log("Legacy login called (handled by listener)", userData);
-    };
-
-    const logout = async () => {
+    const login = async (email, password) => {
         try {
-            await signOut(auth);
+            const res = await api.post('/auth/login', { email, password });
+            localStorage.setItem('token', res.data.token);
+            setUser({
+                ...res.data.user,
+                id: res.data.user.id,
+                uid: res.data.user.id
+            });
+            return res.data.user;
         } catch (error) {
-            console.error("Error signing out:", error);
+            console.error("Login failed:", error.response?.data?.msg || error.message);
+            throw error;
         }
     };
 
+    const register = async (userData) => {
+        try {
+            const res = await api.post('/auth/register', userData);
+            localStorage.setItem('token', res.data.token);
+            setUser({
+                ...res.data.user,
+                id: res.data.user.id,
+                uid: res.data.user.id
+            });
+            return res.data.user;
+        } catch (error) {
+            console.error("Registration failed:", error.response?.data?.msg || error.message);
+            throw error;
+        }
+    };
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        setUser(null);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );
