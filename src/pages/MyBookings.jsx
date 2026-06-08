@@ -18,7 +18,7 @@ export default function MyBookings() {
             setLoading(true);
             try {
                 const res = await api.get('/bookings');
-                setBookings(res.data);
+                setBookings(res.data.map(b => ({ ...b, id: b._id || b.id })));
             } catch (error) {
                 console.error("Error fetching bookings:", error);
             } finally {

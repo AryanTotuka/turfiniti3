@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 
 const AuthContext = createContext(null);
@@ -9,6 +10,22 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkAuth = async () => {
+            // Check for OAuth token in URL params
+            const params = new URLSearchParams(window.location.search);
+            const tokenFromUrl = params.get('token');
+            const oauthError = params.get('error');
+
+            if (tokenFromUrl) {
+                localStorage.setItem('token', tokenFromUrl);
+                // Clean the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            if (oauthError) {
+                console.error('OAuth error:', oauthError);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             if (localStorage.getItem('token')) {
                 try {
                     const res = await api.get('/auth/me');
@@ -17,6 +34,14 @@ export const AuthProvider = ({ children }) => {
                         id: res.data._id,
                         uid: res.data._id
                     });
+
+                    // If we just came from OAuth, navigate to home
+                    if (tokenFromUrl) {
+                        // Small delay to let the state settle, then redirect
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 100);
+                    }
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
                     localStorage.removeItem('token');
@@ -47,6 +72,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = () => {
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        window.location.href = `${backendUrl}/auth/google`;
+    };
+
     const register = async (userData) => {
         try {
             const res = await api.post('/auth/register', userData);
@@ -69,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, loginWithGoogle, register, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

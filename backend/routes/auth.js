@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
@@ -140,5 +141,40 @@ router.get('/users/:id', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// @route   GET /api/auth/google
+// @desc    Initiate Google OAuth flow
+// @access  Public
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile', 'email'],
+  session: false,
+}));
+
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback
+// @access  Public
+router.get('/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
+  (req, res) => {
+    const payload = {
+      user: {
+        id: req.user.id,
+        role: req.user.role,
+      },
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '5 days' },
+      (err, token) => {
+        if (err) {
+          return res.redirect(`${process.env.FRONTEND_URL}/login?error=token_generation_failed`);
+        }
+        res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+      }
+    );
+  }
+);
 
 module.exports = router;
