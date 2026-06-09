@@ -25,5 +25,15 @@ app.use('/api/venues', require('./routes/venues'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/partners', require('./routes/partners'));
 
+// Root route (Health check / Landing)
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Turfiniti API',
+    status: 'healthy',
+    timestamp: new Date()
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
