@@ -73,9 +73,19 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGoogle = () => {
-        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const getBackendUrl = () => {
+            if (import.meta.env.VITE_API_URL) {
+                return import.meta.env.VITE_API_URL;
+            }
+            if (typeof window !== 'undefined' && window.location.port !== '5173') {
+                return '/api';
+            }
+            return 'http://localhost:5000/api';
+        };
+        const backendUrl = getBackendUrl();
         window.location.href = `${backendUrl}/auth/google`;
     };
+
 
     const register = async (userData) => {
         try {
