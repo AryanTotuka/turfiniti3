@@ -50,7 +50,7 @@ if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   
   // Catch-all route to serve index.html for SPA routing
-  app.get('*', (req, res) => {
+  app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 } else {
