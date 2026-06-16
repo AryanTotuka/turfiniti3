@@ -61,6 +61,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/venues", require("./routes/venues"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/partners", require("./routes/partners"));
+app.use("/api/email", require("./routes/email"));
 
 // ---------------------
 // 404 Handler
