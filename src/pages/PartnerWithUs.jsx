@@ -7,7 +7,9 @@ export default function PartnerWithUs() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone: ''
+        phone: '',
+        venueName: '',
+        location: ''
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +25,8 @@ export default function PartnerWithUs() {
             setIsSubmitted(true);
         } catch (err) {
             console.error("Error submitting partner request:", err);
-            setError(`Error: ${err.message}`);
+            const errMsg = err.response?.data?.msg || err.response?.data?.message || err.message;
+            setError(`Error: ${errMsg}`);
         } finally {
             setIsLoading(false);
         }
@@ -136,6 +139,32 @@ export default function PartnerWithUs() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         placeholder="+91 98765 43210"
+                                        required
+                                        style={{ width: '100%', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>Venue Name</label>
+                                    <input
+                                        type="text"
+                                        name="venueName"
+                                        value={formData.venueName}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Dream Turf Arena"
+                                        required
+                                        style={{ width: '100%', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>Venue Location</label>
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        value={formData.location}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Sector 62, Noida"
                                         required
                                         style={{ width: '100%', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
                                     />

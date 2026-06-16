@@ -16,7 +16,10 @@ router.post('/', async (req, res) => {
     const partner = await newPartner.save();
     res.json(partner);
   } catch (err) {
-    console.error(err.message);
+    console.error("Partner submission error:", err.message);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ msg: err.message });
+    }
     res.status(500).send('Server Error');
   }
 });
