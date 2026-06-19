@@ -126,11 +126,12 @@ export default function Payment() {
         );
     }
 
-    return (
-        <div className="section container" style={{ paddingTop: '8rem', minHeight: '80vh' }}>
-            <h1 style={{ marginBottom: '2rem', textAlign: 'center' }}>Secure Checkout</h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+    return (
+        <div className="section container payment-page" style={{ paddingTop: '7rem', minHeight: '80vh' }}>
+            <h1 className="payment-title" style={{ marginBottom: '2rem', textAlign: 'center' }}>Secure Checkout</h1>
+
+            <div className="payment-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
 
                 {/* Order Summary */}
                 <div style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
@@ -161,7 +162,7 @@ export default function Payment() {
                 </div>
 
                 {/* Payment Methods */}
-                <div style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)' }}>
+                <div className="payment-method-card" style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)' }}>
                     <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Payment Method</h2>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
@@ -210,7 +211,7 @@ export default function Payment() {
                                     <input type="text" placeholder="0000 0000 0000 0000" className="form-input" style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} required />
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                <div className="card-details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                                     <div>
                                         <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Expiry Date</label>
                                         <input type="text" placeholder="MM/YY" style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} required />
@@ -253,6 +254,25 @@ export default function Payment() {
                 </div>
 
             </div>
+
+            <style>{`
+                @media (max-width: 768px) {
+                    .payment-page {
+                        padding-top: 5.5rem !important;
+                    }
+                    .payment-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .payment-title {
+                        font-size: 1.75rem;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .payment-method-card {
+                        padding: 1.25rem !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

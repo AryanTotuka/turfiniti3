@@ -33,15 +33,9 @@ export default function WhyChooseUs() {
                 </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+            <div className="why-choose-grid">
                 {features.map((feature, index) => (
-                    <div key={index} style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                        gap: '1rem'
-                    }}>
+                    <div key={index} className="feature-item">
                         <div style={{
                             background: 'white',
                             padding: '1rem',
@@ -51,15 +45,46 @@ export default function WhyChooseUs() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             width: '64px',
-                            height: '64px'
+                            height: '64px',
+                            flexShrink: 0
                         }}>
                             {feature.icon}
                         </div>
-                        <h3 style={{ fontSize: '1.25rem' }}>{feature.title}</h3>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{feature.description}</p>
+                        <div className="feature-text">
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{feature.title}</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{feature.description}</p>
+                        </div>
                     </div>
                 ))}
             </div>
+            
+            <style>{`
+                .why-choose-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 2rem;
+                }
+                .feature-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    gap: 1rem;
+                }
+                @media (max-width: 768px) {
+                    .why-choose-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .feature-item {
+                        flex-direction: row;
+                        text-align: left;
+                        align-items: flex-start;
+                    }
+                    .feature-text h3 {
+                        margin-bottom: 0.25rem !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

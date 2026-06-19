@@ -14,67 +14,56 @@ export default function Hero() {
     return (
         <header className="hero section" style={{
             position: 'relative',
-            padding: '8rem 1rem 6rem',
             backgroundColor: 'var(--bg-secondary)',
             backgroundImage: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=1470&auto=format&fit=crop")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             overflow: 'hidden'
         }}>
-            <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'left' }}>
-                <h1 style={{
-                    fontSize: 'clamp(3rem, 6vw, 4.5rem)',
+            <div className="container hero-content" style={{ position: 'relative', zIndex: 1, textAlign: 'left' }}>
+                <h1 className="hero-title" style={{
                     fontWeight: 800,
                     lineHeight: 1.1,
-                    marginBottom: '0.5rem',
+                    marginBottom: '0.75rem',
                     color: '#4ade80',
-                    maxWidth: '800px',
                     fontFamily: '"Playfair Display", serif'
                 }}>
                     PLAY INFINITE
                 </h1>
 
-                <p style={{
-                    fontSize: '1.5rem',
+                <p className="hero-subtitle" style={{
                     color: '#ffffff',
-                    marginBottom: '3rem',
-                    maxWidth: '600px',
-                    margin: '0 0 3rem 0',
-                    whiteSpace: 'pre-line'
+                    margin: '0 0 2rem 0',
                 }}>
-                    Book cricket, football & pickleball grounds instantly.
+                    Book cricket, football &amp; pickleball grounds instantly.
                     Available across Jaipur, anytime you want to play.
                 </p>
 
                 <div className="search-bar" style={{
                     background: 'white',
-                    padding: '0.75rem',
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'var(--shadow-lg)',
-                    display: 'inline-flex',
+                    display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
-                    gap: '1rem',
                     maxWidth: '800px',
                     width: '100%',
                     border: '1px solid var(--border-color)',
-                    marginLeft: '0'
                 }}>
                     <div className="search-input-group" style={{
-                        flex: '1 1 200px',
+                        flex: '1 1 180px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.75rem',
-                        padding: '0.5rem',
-                        borderRight: '1px solid var(--border-color)'
+                        padding: '0.75rem 1rem',
                     }}>
-                        <MapPin size={20} color="var(--primary)" />
+                        <MapPin size={20} color="var(--primary)" style={{ flexShrink: 0 }} />
                         <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', width: '100%' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>LOCATION</label>
+                            <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px' }}>LOCATION</label>
                             <select
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
-                                style={{ border: 'none', width: '100%', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', color: 'var(--text-main)', background: 'transparent' }}
+                                style={{ border: 'none', width: '100%', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', color: 'var(--text-main)', background: 'transparent', padding: 0 }}
                             >
                                 <option value="">Select Location</option>
                                 <option value="Jaipur">Jaipur</option>
@@ -82,20 +71,22 @@ export default function Hero() {
                         </div>
                     </div>
 
+                    <div className="search-divider" />
+
                     <div className="search-input-group" style={{
-                        flex: '1 1 200px',
+                        flex: '1 1 180px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.75rem',
-                        padding: '0.5rem'
+                        padding: '0.75rem 1rem',
                     }}>
-                        <Trophy size={20} color="var(--primary)" />
+                        <Trophy size={20} color="var(--primary)" style={{ flexShrink: 0 }} />
                         <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', width: '100%' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>SPORT</label>
+                            <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px' }}>SPORT</label>
                             <select
                                 value={sport}
                                 onChange={(e) => setSport(e.target.value)}
-                                style={{ border: 'none', width: '100%', outline: 'none', fontSize: '1rem', fontFamily: 'inherit', color: 'var(--text-main)', background: 'transparent' }}
+                                style={{ border: 'none', width: '100%', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit', color: 'var(--text-main)', background: 'transparent', padding: 0 }}
                             >
                                 <option>All Sports</option>
                                 <option>Cricket</option>
@@ -105,15 +96,17 @@ export default function Hero() {
                         </div>
                     </div>
 
-                    <button onClick={handleSearch} className="btn btn-primary" style={{ padding: '0.75rem 2rem', borderRadius: 'var(--radius-md)', height: '100%' }}>
-                        <Search size={20} style={{ marginRight: '0.5rem' }} />
-                        Search
-                    </button>
+                    <div className="search-btn-wrap">
+                        <button onClick={handleSearch} className="btn btn-primary search-btn">
+                            <Search size={18} style={{ marginRight: '0.4rem' }} />
+                            Search
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Decorative Elements */}
-            <div style={{
+            {/* Decorative Elements – hidden on small screens */}
+            <div className="hero-deco-1" style={{
                 position: 'absolute',
                 top: '10%',
                 left: '5%',
@@ -123,7 +116,7 @@ export default function Hero() {
                 border: '4px solid var(--primary-light)',
                 opacity: 0.5
             }} />
-            <div style={{
+            <div className="hero-deco-2" style={{
                 position: 'absolute',
                 bottom: '15%',
                 right: '5%',
@@ -136,25 +129,76 @@ export default function Hero() {
             }} />
 
             <style>{`
+        /* Desktop hero sizing */
+        .hero.section {
+          padding: 8rem 0 6rem;
+        }
+        .hero-content {
+          padding-top: 0;
+        }
+        .hero-title {
+          font-size: clamp(2.5rem, 6vw, 4.5rem);
+          max-width: 800px;
+        }
+        .hero-subtitle {
+          font-size: clamp(1rem, 2.5vw, 1.4rem);
+          max-width: 600px;
+        }
+        .search-divider {
+          width: 1px;
+          height: 40px;
+          background: var(--border-color);
+          flex-shrink: 0;
+        }
+        .search-btn-wrap {
+          padding: 0.5rem;
+          flex-shrink: 0;
+        }
+        .search-btn {
+          white-space: nowrap;
+          border-radius: var(--radius-md);
+        }
+        .nav-link:hover {
+          color: var(--primary) !important;
+        }
+
+        /* Tablet */
         @media (max-width: 768px) {
-          .search-input-group {
-             border-right: none !important;
-             border-bottom: 1px solid var(--border-color);
-             padding-bottom: 1rem !important;
+          .hero.section {
+            padding: 5.5rem 0 3rem;
           }
           .search-bar {
-             flex-direction: column;
-             align-items: stretch;
-             gap: 0.5rem;
-             padding: 1rem;
+            flex-direction: column;
+            align-items: stretch;
           }
-          .search-bar button {
-             width: 100%;
-             margin-top: 0.5rem;
+          .search-divider {
+            width: 100%;
+            height: 1px;
           }
+          .search-input-group {
+            border-right: none !important;
+          }
+          .search-btn-wrap {
+            padding: 0.5rem 0.75rem 0.75rem;
+          }
+          .search-btn {
+            width: 100%;
+          }
+          .hero-deco-1, .hero-deco-2 {
+            display: none;
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
           .hero.section {
-            padding-top: 6rem !important;
-            padding-bottom: 3rem !important;
+            padding: 5rem 0 2.5rem;
+          }
+          .hero-title {
+            font-size: 2.25rem;
+          }
+          .hero-subtitle {
+            font-size: 0.95rem;
           }
         }
       `}</style>

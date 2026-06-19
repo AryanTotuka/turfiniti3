@@ -58,27 +58,27 @@ export default function MyBookings() {
     };
 
     return (
-        <div className="section container" style={{ paddingTop: '8rem', minHeight: '80vh' }}>
-            <h1 style={{ marginBottom: '2rem', fontSize: '2rem' }}>My Bookings</h1>
+        <div className="section container my-bookings-page" style={{ paddingTop: '7rem', minHeight: '80vh' }}>
+            <h1 className="my-bookings-title" style={{ marginBottom: '2rem' }}>My Bookings</h1>
 
             {loading ? (
                 <p style={{ textAlign: 'center' }}>Loading bookings...</p>
             ) : bookings.length === 0 ? (
                 <div style={{
                     textAlign: 'center',
-                    padding: '4rem',
+                    padding: '4rem 1rem',
                     background: 'var(--bg-secondary)',
                     borderRadius: 'var(--radius-md)',
                     color: 'var(--text-secondary)'
                 }}>
-                    <Calendar size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                    <h3>No Bookings Found</h3>
+                    <Calendar size={48} style={{ marginBottom: '1rem', opacity: 0.5, display: 'inline-block' }} />
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No Bookings Found</h3>
                     <p>You haven't made any bookings yet.</p>
                 </div>
             ) : (
                 <div style={{ display: 'grid', gap: '1.5rem' }}>
                     {bookings.map(booking => (
-                        <div key={booking.id} style={{
+                        <div key={booking.id} className="booking-card" style={{
                             background: 'white',
                             padding: '1.5rem',
                             borderRadius: 'var(--radius-md)',
@@ -91,7 +91,7 @@ export default function MyBookings() {
                             alignItems: 'center'
                         }}>
                             <div style={{ flex: '1 1 300px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                                     <span style={{
                                         background: booking.status === 'cancelled' ? '#fee2e2' : '#dcfce7',
                                         color: booking.status === 'cancelled' ? '#b91c1c' : '#166534',
@@ -105,7 +105,7 @@ export default function MyBookings() {
                                     <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{booking.venueName}</h3>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', flexWrap: 'wrap' }}>
+                                <div className="booking-meta" style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', flexWrap: 'wrap' }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         <Calendar size={16} /> {booking.date}
                                     </span>
@@ -121,15 +121,16 @@ export default function MyBookings() {
                             <button
                                 onClick={() => handleCancel(booking.id)}
                                 disabled={booking.status === 'cancelled'}
-                                className="btn btn-outline"
+                                className="btn btn-outline cancel-btn"
                                 style={{
                                     borderColor: booking.status === 'cancelled' ? '#ccc' : '#ef4444',
                                     color: booking.status === 'cancelled' ? '#999' : '#ef4444',
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '0.5rem',
                                     fontSize: '0.875rem',
-                                    cursor: booking.status === 'cancelled' ? 'not-allowed' : 'pointer'
+                                    cursor: booking.status === 'cancelled' ? 'not-allowed' : 'pointer',
                                 }}
                                 onMouseOver={(e) => {
                                     if (booking.status !== 'cancelled') e.currentTarget.style.background = '#fef2f2';
@@ -144,6 +145,32 @@ export default function MyBookings() {
                     ))}
                 </div>
             )}
+
+            <style>{`
+                .my-bookings-title {
+                    font-size: 2rem;
+                }
+                @media (max-width: 768px) {
+                    .my-bookings-page {
+                        padding-top: 5.5rem !important;
+                    }
+                    .my-bookings-title {
+                        font-size: 1.75rem;
+                    }
+                    .booking-meta {
+                        gap: 0.75rem !important;
+                        flex-direction: column;
+                    }
+                    .cancel-btn {
+                        width: 100%;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .booking-card {
+                        padding: 1.25rem !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

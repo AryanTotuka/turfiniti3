@@ -40,12 +40,12 @@ export default function PartnerWithUs() {
     };
 
     return (
-        <div className="section container" style={{ paddingTop: '8rem', minHeight: '90vh' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+        <div className="section container partner-page" style={{ paddingTop: '7rem', minHeight: '90vh' }}>
+            <div className="partner-grid">
 
                 {/* Left Content */}
                 <div>
-                    <h1 style={{ fontSize: '3.5rem', lineHeight: 1.1, marginBottom: '1.5rem', background: 'linear-gradient(to right, var(--primary), #1e40af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <h1 className="partner-heading" style={{ lineHeight: 1.1, marginBottom: '1.5rem', background: 'linear-gradient(to right, var(--primary), #1e40af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         Let’s Grow Together
                     </h1>
                     <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '3rem' }}>
@@ -86,9 +86,8 @@ export default function PartnerWithUs() {
                 </div>
 
                 {/* Right Form */}
-                <div style={{
+                <div className="partner-form-card" style={{
                     background: 'white',
-                    padding: '3rem',
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'var(--shadow-lg)',
                     border: '1px solid var(--border-color)'
@@ -198,6 +197,55 @@ export default function PartnerWithUs() {
                     )}
                 </div>
             </div>
+
+            <style>{`
+                .partner-page {
+                    padding-top: 7rem;
+                }
+                .partner-grid {
+                    display: flex;
+                    gap: 4rem;
+                    align-items: center;
+                }
+                .partner-grid > div {
+                    flex: 1;
+                    width: 100%;
+                }
+                .partner-heading {
+                    font-size: 3.5rem;
+                }
+                .partner-form-card {
+                    padding: 3rem;
+                }
+                @media (max-width: 992px) {
+                    .partner-grid {
+                        flex-direction: column;
+                        gap: 2.5rem;
+                    }
+                    .partner-heading {
+                        font-size: 2.5rem;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .partner-page {
+                        padding-top: 5.5rem !important;
+                    }
+                    .partner-heading {
+                        font-size: 2rem;
+                    }
+                    .partner-form-card {
+                        padding: 1.75rem;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .partner-heading {
+                        font-size: 1.75rem;
+                    }
+                    .partner-form-card {
+                        padding: 1.25rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

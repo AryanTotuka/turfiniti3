@@ -13,13 +13,30 @@ export default function FeaturedVenues() {
 
     return (
         <section id="venues" className="section container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '2rem' }}>
-                <div>
+            <div className="featured-venues-header">
+                <div className="featured-venues-title">
                     <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Featured Venues</h2>
                     <p style={{ color: 'var(--text-secondary)' }}>Top rated locations for your next match.</p>
                 </div>
                 <Link to="/venues" className="btn btn-outline">View All</Link>
             </div>
+
+            <style>{`
+                .featured-venues-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    margin-bottom: 2rem;
+                }
+                @media (max-width: 768px) {
+                    .featured-venues-header {
+                        flex-direction: column;
+                        align-items: center;
+                        text-align: center;
+                        gap: 1rem;
+                    }
+                }
+            `}</style>
 
             <div className="grid-3">
                 {loadingVenues ? (

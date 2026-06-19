@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Search, Filter } from 'lucide-react';
+import { MapPin, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useVenue } from '../context/VenueContext';
 
@@ -7,25 +7,24 @@ export default function Venues() {
     const location = useLocation();
     const { venues, loadingVenues } = useVenue();
     const [selectedSport, setSelectedSport] = useState(location.state?.sport || "All Sports");
-    const [searchQuery, setSearchQuery] = useState(location.state?.location || "");
+    const [searchQuery] = useState(location.state?.location || "");
     const [filteredVenues, setFilteredVenues] = useState([]);
     const [title, setTitle] = useState("All Venues");
+    const [filtersOpen, setFiltersOpen] = useState(false);
 
     useEffect(() => {
         handleApplyFilters();
-    }, [venues]); // Run when venues load or change
+    }, [venues]);
 
     const handleApplyFilters = () => {
         let filtered = venues;
 
-        // Filter by Sport
         if (selectedSport !== "All Sports") {
             filtered = filtered.filter(venue =>
                 venue.sports.some(s => s.type.includes(selectedSport))
             );
         }
 
-        // Filter by Location Search
         if (searchQuery.trim()) {
             filtered = filtered.filter(venue =>
                 venue.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,7 +34,6 @@ export default function Venues() {
 
         setFilteredVenues(filtered);
 
-        // Update Title
         if (selectedSport !== "All Sports") {
             setTitle(`${selectedSport} Venues${searchQuery ? ` in "${searchQuery}"` : ''}`);
         } else if (searchQuery) {
@@ -46,43 +44,75 @@ export default function Venues() {
     };
 
     return (
-        <div className="section container venues-page" style={{ paddingTop: '8rem' }}>
-            <style>{`
-                @media (max-width: 768px) {
-                    .venues-page {
-                        padding-top: 6rem !important;
-                    }
-                }
-            `}</style>
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+        <div className="section container venues-page" style={{ paddingTop: '7rem' }}>
+
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
 
                 {/* Filters Sidebar */}
-                <aside style={{ flex: '1 1 250px', background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', height: 'fit-content' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.25rem' }}>Filters</h3>
-                        <Filter size={20} color="var(--primary)" />
-                    </div>
+                <aside className="venues-sidebar">
+                    {/* Mobile filter toggle */}
+                    <button
+                        className="filters-toggle"
+                        onClick={() => setFiltersOpen(o => !o)}
+                        style={{
+                            display: 'none',
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '0.875rem 1rem',
+                            background: 'white',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--radius-md)',
+                            fontWeight: 600,
+                            marginBottom: '0.5rem',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Filter size={18} color="var(--primary)" /> Filters
+                        </span>
+                        {filtersOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </button>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Sport</label>
-                        <select
-                            value={selectedSport}
-                            onChange={(e) => setSelectedSport(e.target.value)}
-                            style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                    <div className={`filters-body${filtersOpen ? ' open' : ''}`} style={{
+                        background: 'white',
+                        padding: '1.5rem',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-color)',
+                        height: 'fit-content'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.25rem' }}>Filters</h3>
+                            <Filter size={20} color="var(--primary)" />
+                        </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Sport</label>
+                            <select
+                                value={selectedSport}
+                                onChange={(e) => setSelectedSport(e.target.value)}
+                                style={{ width: '100%', padding: '0.625rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                            >
+                                <option>All Sports</option>
+                                <option>Cricket</option>
+                                <option>Football</option>
+                                <option>Pickleball</option>
+                            </select>
+                        </div>
+
+                        <button
+                            onClick={() => { handleApplyFilters(); setFiltersOpen(false); }}
+                            className="btn btn-primary"
+                            style={{ width: '100%' }}
                         >
-                            <option>All Sports</option>
-                            <option>Cricket</option>
-                            <option>Football</option>
-                            <option>Pickleball</option>
-                        </select>
+                            Apply Filters
+                        </button>
                     </div>
-
-                    <button onClick={handleApplyFilters} className="btn btn-primary" style={{ width: '100%' }}>Apply Filters</button>
                 </aside>
 
                 {/* Venues Grid */}
-                <div style={{ flex: '3 1 600px' }}>
-                    <h1 style={{ marginBottom: '1.5rem', fontSize: '2rem' }}>{title}</h1>
+                <div style={{ flex: '3 1 280px', minWidth: 0 }}>
+                    <h1 style={{ marginBottom: '1.25rem', fontSize: '1.75rem' }}>{title}</h1>
 
                     {loadingVenues ? (
                         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -103,7 +133,11 @@ export default function Venues() {
                                     boxShadow: 'var(--shadow-sm)'
                                 }}>
                                     <div style={{ height: '180px', overflow: 'hidden' }}>
-                                        <img src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80&w=800"} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img
+                                            src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80&w=800"}
+                                            alt={venue.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
                                     </div>
                                     <div style={{ padding: '1.25rem' }}>
                                         <div style={{ marginBottom: '0.5rem' }}>
@@ -142,6 +176,38 @@ export default function Venues() {
                 </div>
             </div>
 
+            <style>{`
+                .venues-page {
+                    padding-top: 7rem;
+                }
+                .venues-sidebar {
+                    flex: 1 1 220px;
+                    max-width: 260px;
+                }
+                .filters-body {
+                    display: block;
+                }
+                @media (max-width: 768px) {
+                    .venues-page {
+                        padding-top: 5.5rem !important;
+                    }
+                    .venues-sidebar {
+                        max-width: 100%;
+                        width: 100%;
+                        flex: 1 1 100%;
+                    }
+                    .filters-toggle {
+                        display: flex !important;
+                    }
+                    .filters-body {
+                        display: none;
+                    }
+                    .filters-body.open {
+                        display: block;
+                        margin-top: 0.25rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

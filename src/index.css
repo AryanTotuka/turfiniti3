@@ -3,11 +3,8 @@
 :root {
   /* Color Palette - White & Green Theme */
   --primary: #2E7D32;
-  /* Emerald Green */
   --primary-hover: #1B5E20;
-  /* Darker Green */
   --primary-light: #E8F5E9;
-  /* Very Light Green for backgrounds */
 
   --bg-main: #FFFFFF;
   --bg-secondary: #F8F9FA;
@@ -30,6 +27,9 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Navbar height tokens */
+  --navbar-height: 80px;
 }
 
 * {
@@ -38,12 +38,19 @@
   padding: 0;
 }
 
+html {
+  /* Prevent zoom on input focus on iOS */
+  touch-action: manipulation;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 
 a {
@@ -57,13 +64,21 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  /* Minimum tap target size for mobile */
+  min-height: 44px;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px;
 }
 
 /* Utilities */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
 .btn {
@@ -74,6 +89,8 @@ button {
   border-radius: var(--radius-md);
   font-weight: 600;
   transition: all 0.2s ease;
+  /* Touch-friendly minimum height */
+  min-height: 44px;
 }
 
 .btn-primary {
@@ -84,6 +101,10 @@ button {
 .btn-primary:hover {
   background-color: var(--primary-hover);
   transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-outline {
@@ -115,18 +136,59 @@ button {
 /* Grid Layouts */
 .grid-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
+/* ─── Responsive Breakpoints ─── */
+
+/* Large tablets / small desktops */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+}
+
+/* Tablets */
 @media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .section {
+    padding: 2.5rem 0;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .hero-section {
+    padding-top: 5rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  /* Prevent tables from causing overflow */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.875rem;
+  }
+
   .section {
     padding: 2rem 0;
   }
 
-  .hero-section {
-    padding-top: 6rem !important;
-    /* Account for fixed navbar */
-    padding-bottom: 2rem !important;
+  .btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
   }
 }
