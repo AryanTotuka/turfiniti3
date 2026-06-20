@@ -21,7 +21,7 @@ export default function Venues() {
 
         if (selectedSport !== "All Sports") {
             filtered = filtered.filter(venue =>
-                venue.sports.some(s => s.type.includes(selectedSport))
+                venue.sports.some(s => s.type.toLowerCase().includes(selectedSport.toLowerCase()))
             );
         }
 

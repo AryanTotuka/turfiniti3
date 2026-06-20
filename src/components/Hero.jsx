@@ -36,7 +36,7 @@ export default function Hero() {
                     margin: '0 0 2rem 0',
                 }}>
                     Book cricket, football &amp; pickleball grounds instantly.
-                    Available across Jaipur, anytime you want to play.
+                    Available across Jaipur, Delhi &amp; Gurgaon, anytime you want to play.
                 </p>
 
                 <div className="search-bar" style={{
@@ -67,6 +67,8 @@ export default function Hero() {
                             >
                                 <option value="">Select Location</option>
                                 <option value="Jaipur">Jaipur</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Gurgaon">Gurgaon</option>
                             </select>
                         </div>
                     </div>
