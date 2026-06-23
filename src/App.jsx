@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -26,6 +27,7 @@ function App() {
       <AuthProvider>
         <VenueProvider>
           <div className="app">
+            <Toaster position="top-center" />
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />

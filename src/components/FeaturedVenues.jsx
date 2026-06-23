@@ -28,6 +28,22 @@ export default function FeaturedVenues() {
                     align-items: flex-end;
                     margin-bottom: 2rem;
                 }
+                .venue-card-hover {
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                .venue-card-hover:hover {
+                    transform: translateY(-4px);
+                    box-shadow: var(--shadow-md);
+                }
+                .venue-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s ease;
+                }
+                .venue-card-hover:hover .venue-img {
+                    transform: scale(1.05);
+                }
                 @media (max-width: 768px) {
                     .featured-venues-header {
                         flex-direction: column;
@@ -42,26 +58,16 @@ export default function FeaturedVenues() {
                 {loadingVenues ? (
                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>Loading featured venues...</div>
                 ) : displayVenues.map((venue) => (
-                    <div key={venue.id} style={{
+                    <div key={venue.id} className="venue-card-hover" style={{
                         border: '1px solid var(--border-color)',
                         borderRadius: 'var(--radius-lg)',
                         overflow: 'hidden',
                         background: 'white',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-4px)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                        }}
-                    >
+                        boxShadow: 'var(--shadow-sm)'
+                    }}>
                         {/* Image Box */}
                         <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
-                            <img src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80"} alt={venue.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img className="venue-img" src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&q=80"} alt={venue.name} />
                             <div style={{
                                 position: 'absolute',
                                 top: '1rem',

@@ -6,6 +6,7 @@ import api from '../api';
 import { CheckCircle, CreditCard, Smartphone, ShieldCheck } from 'lucide-react';
 import { sendBookingConfirmation } from '../utils/emailService';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
+import toast from 'react-hot-toast';
 
 export default function Payment() {
     const { state } = useLocation();
@@ -92,6 +93,7 @@ export default function Payment() {
 
             setConfirmedBookingId(bookingDisplayId);
             setIsSuccess(true);
+            toast.success('Booking Confirmed!');
         } catch (error) {
             console.error("Error saving booking:", error);
             alert("Payment failed or error saving booking. Please try again.");

@@ -3,6 +3,7 @@ import { useVenue } from '../context/VenueContext';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Clock, MapPin, IndianRupee, XCircle, AlertCircle } from 'lucide-react';
 import api from '../api';
+import toast from 'react-hot-toast';
 
 export default function MyBookings() {
     const { user } = useAuth();
@@ -50,9 +51,10 @@ export default function MyBookings() {
 
                 // Sync context if needed (optional since we rely on firestore now)
                 cancelBooking(id);
+                toast.success('Booking Cancelled Successfully!');
             } catch (error) {
                 console.error("Error cancelling booking:", error);
-                alert("Failed to cancel booking.");
+                toast.error("Failed to cancel booking.");
             }
         }
     };
