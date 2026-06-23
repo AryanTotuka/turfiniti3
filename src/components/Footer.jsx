@@ -65,6 +65,9 @@ export default function Footer() {
                     justify-content: flex-end;
                 }
                 @media (max-width: 768px) {
+                    footer {
+                        padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+                    }
                     .footer-inner {
                         flex-direction: column;
                         align-items: center;

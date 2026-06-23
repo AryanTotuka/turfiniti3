@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import './App.css';
 import Navbar from './components/Navbar';
+import MobileBottomBar from './components/MobileBottomBar';
 import Home from './pages/Home';
 import Venues from './pages/Venues';
 import VenueDetails from './pages/VenueDetails';
@@ -49,6 +50,9 @@ function App() {
 
             {/* Footer */}
             <Footer />
+            
+            {/* Mobile Bottom Bar */}
+            <MobileBottomBar />
           </div>
         </VenueProvider>
       </AuthProvider>
