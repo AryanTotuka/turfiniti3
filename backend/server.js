@@ -16,7 +16,7 @@ app.set('trust proxy', 1);
 // ---------------------
 
 const corsOptions = {
-  origin: ['https://turfiniti.netlify.app', 'http://localhost:5173'],
+  origin: ['https://turfiniti.netlify.app', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],

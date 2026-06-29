@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Store } from 'lucide-react';
+import { User, Store, Mail, Phone } from 'lucide-react';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
+import toast from 'react-hot-toast';
 
 export default function Signup() {
     const [role, setRole] = useState('player');
-    const { register, loginWithGoogle } = useAuth();
+    const [signupMethod, setSignupMethod] = useState('email'); // 'email' or 'phone'
+    const { register, registerWithOtp, sendOtp, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -15,16 +17,12 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [businessName, setBusinessName] = useState('');
+    const [otp, setOtp] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSignup = async (e) => {
-        // Rate Limit Check (Disabled for testing)
-        // if (!checkRateLimit('signup_attempt', 3, 3600000)) { 
-        //     const remaining = Math.ceil(getRateLimitResetTime('signup_attempt', 3600000) / 60000);
-        //     setError(`Too many account creation attempts. Please wait ${remaining} minutes.`);
-        //     return;
-        // }
         e.preventDefault();
         setError('');
         setLoading(true);
@@ -35,10 +33,16 @@ export default function Signup() {
                 email: email,
                 password: password,
                 phone: phone,
-                role: role
+                role: role,
+                otp: signupMethod === 'phone' ? otp : undefined
             };
 
-            await register(userData);
+            if (signupMethod === 'email') {
+                await register(userData);
+            } else {
+                if (!otpSent) return;
+                await registerWithOtp(userData);
+            }
 
             if (location.state?.from && location.state?.bookingData) {
                 navigate(location.state.from, { state: location.state.bookingData });
@@ -48,7 +52,26 @@ export default function Signup() {
 
         } catch (err) {
             console.error("Signup Error:", err);
-            setError(err.response?.data?.msg || err.message);
+            const errorMsg = err.response?.data?.msg || err.message;
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSendOtp = async () => {
+        if (!phone || !email || (role === 'player' ? !name : !businessName)) {
+            setError("Please fill in all details before sending OTP.");
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            await sendOtp(phone);
+            setOtpSent(true);
+        } catch (err) {
+            setError(err.response?.data?.msg || "Failed to send OTP.");
         } finally {
             setLoading(false);
         }
@@ -93,7 +116,7 @@ export default function Signup() {
                     background: 'var(--bg-secondary)',
                     padding: '0.25rem',
                     borderRadius: 'var(--radius-md)',
-                    marginBottom: '2rem'
+                    marginBottom: '1.5rem'
                 }}>
                     <button
                         onClick={() => setRole('player')}
@@ -129,6 +152,24 @@ export default function Signup() {
                     </button>
                 </div>
 
+                {/* Method Toggle */}
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <button
+                        className="btn-text"
+                        style={{ flex: 1, paddingBottom: '0.5rem', borderBottom: signupMethod === 'email' ? '2px solid var(--primary)' : 'none', color: signupMethod === 'email' ? 'var(--primary)' : 'var(--text-secondary)' }}
+                        onClick={() => { setSignupMethod('email'); setOtpSent(false); setError(''); }}
+                    >
+                        <Mail size={16} style={{ marginRight: '0.5rem', display: 'inline-block' }} /> Email
+                    </button>
+                    <button
+                        className="btn-text"
+                        style={{ flex: 1, paddingBottom: '0.5rem', borderBottom: signupMethod === 'phone' ? '2px solid var(--primary)' : 'none', color: signupMethod === 'phone' ? 'var(--primary)' : 'var(--text-secondary)' }}
+                        onClick={() => { setSignupMethod('phone'); setError(''); }}
+                    >
+                        <Phone size={16} style={{ marginRight: '0.5rem', display: 'inline-block' }} /> Phone OTP
+                    </button>
+                </div>
+
                 <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {role === 'player' && (
                         <div>
@@ -140,6 +181,7 @@ export default function Signup() {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                disabled={otpSent}
                             />
                         </div>
                     )}
@@ -154,6 +196,7 @@ export default function Signup() {
                                 value={businessName}
                                 onChange={(e) => setBusinessName(e.target.value)}
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                disabled={otpSent}
                             />
                         </div>
                     )}
@@ -167,6 +210,7 @@ export default function Signup() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                            disabled={otpSent}
                         />
                     </div>
 
@@ -179,24 +223,53 @@ export default function Signup() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                            disabled={otpSent}
                         />
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
-                        />
-                    </div>
+                    {signupMethod === 'email' && (
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                            />
+                        </div>
+                    )}
 
-                    <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%', opacity: loading ? 0.7 : 1 }} disabled={loading}>
-                        {loading ? 'Creating Account...' : `Sign Up as ${role === 'player' ? 'Player' : 'Partner'}`}
-                    </button>
+                    {signupMethod === 'phone' && otpSent && (
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Enter OTP</label>
+                            <input
+                                type="text"
+                                placeholder="1234"
+                                required
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                            />
+                        </div>
+                    )}
+
+                    {signupMethod === 'email' ? (
+                        <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                            {loading ? 'Creating Account...' : `Sign Up as ${role === 'player' ? 'Player' : 'Partner'}`}
+                        </button>
+                    ) : (
+                        !otpSent ? (
+                            <button type="button" onClick={handleSendOtp} className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                                {loading ? 'Sending OTP...' : 'Send OTP'}
+                            </button>
+                        ) : (
+                            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                                {loading ? 'Verifying...' : `Verify & Sign Up`}
+                            </button>
+                        )
+                    )}
                 </form>
 
                 {role === 'player' && (

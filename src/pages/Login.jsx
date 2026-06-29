@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Store } from 'lucide-react';
+import { User, Store, Mail, Phone } from 'lucide-react';
 import { checkRateLimit, getRateLimitResetTime } from '../utils/rateLimit';
 
 export default function Login() {
-    const { login, loginWithGoogle } = useAuth();
+    const { login, loginWithGoogle, sendOtp, loginWithOtp } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     const [role, setRole] = useState('player');
+    const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
+    const [otp, setOtp] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -27,7 +31,14 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const loggedInUser = await login(email, password);
+            let loggedInUser;
+            if (loginMethod === 'email') {
+                loggedInUser = await login(email, password);
+            } else {
+                if (!otpSent) return; // shouldn't reach here without OTP sent
+                loggedInUser = await loginWithOtp(phone, otp);
+            }
+
             console.log("Logged in user role:", loggedInUser.role);
 
             if (location.state?.from && location.state?.bookingData) {
@@ -38,7 +49,24 @@ export default function Login() {
 
         } catch (err) {
             console.error("Login Error:", err);
-            setError("Invalid email or password.");
+            setError(err.response?.data?.msg || "Invalid credentials or OTP.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSendOtp = async () => {
+        if (!phone) {
+            setError("Please enter a valid phone number.");
+            return;
+        }
+        setError('');
+        setLoading(true);
+        try {
+            await sendOtp(phone);
+            setOtpSent(true);
+        } catch (err) {
+            setError(err.response?.data?.msg || "Failed to send OTP.");
         } finally {
             setLoading(false);
         }
@@ -59,7 +87,7 @@ export default function Login() {
                 <h1 style={{ marginBottom: '2rem', textAlign: 'center' }}>Welcome Back</h1>
 
                 {/* Role Toggle */}
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', padding: '0.25rem', background: '#f1f5f9', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', padding: '0.25rem', background: '#f1f5f9', borderRadius: 'var(--radius-md)' }}>
                     <button
                         className={`btn ${role === 'player' ? 'btn-primary' : 'btn-text'}`}
                         style={{ flex: 1, borderRadius: 'var(--radius-sm)' }}
@@ -76,35 +104,97 @@ export default function Login() {
                     </button>
                 </div>
 
+                {/* Method Toggle */}
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <button
+                        className="btn-text"
+                        style={{ flex: 1, paddingBottom: '0.5rem', borderBottom: loginMethod === 'email' ? '2px solid var(--primary)' : 'none', color: loginMethod === 'email' ? 'var(--primary)' : 'var(--text-secondary)' }}
+                        onClick={() => { setLoginMethod('email'); setOtpSent(false); setError(''); }}
+                    >
+                        <Mail size={16} style={{ marginRight: '0.5rem', display: 'inline-block' }} /> Email
+                    </button>
+                    <button
+                        className="btn-text"
+                        style={{ flex: 1, paddingBottom: '0.5rem', borderBottom: loginMethod === 'phone' ? '2px solid var(--primary)' : 'none', color: loginMethod === 'phone' ? 'var(--primary)' : 'var(--text-secondary)' }}
+                        onClick={() => { setLoginMethod('phone'); setError(''); }}
+                    >
+                        <Phone size={16} style={{ marginRight: '0.5rem', display: 'inline-block' }} /> Phone OTP
+                    </button>
+                </div>
+
                 {error && <p style={{ color: 'red', marginBottom: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>{error}</p>}
 
                 <form onSubmit={handleLogin}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="form-input"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
-                            required
-                        />
-                    </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="form-input"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
-                            required
-                        />
-                    </div>
+                    {loginMethod === 'email' ? (
+                        <>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="form-input"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="form-input"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                    required
+                                />
+                            </div>
+                            <button disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}>
+                                {loading ? 'Logging in...' : 'Log In'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Phone Number</label>
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="form-input"
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                    required
+                                    disabled={otpSent}
+                                    placeholder="e.g. 9876543210"
+                                />
+                            </div>
+                            
+                            {otpSent && (
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Enter OTP</label>
+                                    <input
+                                        type="text"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        className="form-input"
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                                        required
+                                        placeholder="1234"
+                                    />
+                                </div>
+                            )}
 
-                    <button disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}>
-                        {loading ? 'Logging in...' : 'Log In'}
-                    </button>
+                            {!otpSent ? (
+                                <button type="button" onClick={handleSendOtp} disabled={loading || !phone} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}>
+                                    {loading ? 'Sending OTP...' : 'Send OTP'}
+                                </button>
+                            ) : (
+                                <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}>
+                                    {loading ? 'Verifying...' : 'Verify & Log In'}
+                                </button>
+                            )}
+                        </>
+                    )}
                 </form>
 
                 {role === 'player' && (

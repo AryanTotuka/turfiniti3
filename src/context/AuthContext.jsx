@@ -103,13 +103,55 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const sendOtp = async (phone) => {
+        try {
+            const res = await api.post('/auth/send-otp', { phone });
+            return res.data;
+        } catch (error) {
+            console.error("Send OTP failed:", error.response?.data?.msg || error.message);
+            throw error;
+        }
+    };
+
+    const loginWithOtp = async (phone, otp) => {
+        try {
+            const res = await api.post('/auth/verify-otp-login', { phone, otp });
+            localStorage.setItem('token', res.data.token);
+            setUser({
+                ...res.data.user,
+                id: res.data.user.id,
+                uid: res.data.user.id
+            });
+            return res.data.user;
+        } catch (error) {
+            console.error("Login with OTP failed:", error.response?.data?.msg || error.message);
+            throw error;
+        }
+    };
+
+    const registerWithOtp = async (userData) => {
+        try {
+            const res = await api.post('/auth/verify-otp-signup', userData);
+            localStorage.setItem('token', res.data.token);
+            setUser({
+                ...res.data.user,
+                id: res.data.user.id,
+                uid: res.data.user.id
+            });
+            return res.data.user;
+        } catch (error) {
+            console.error("Register with OTP failed:", error.response?.data?.msg || error.message);
+            throw error;
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, loginWithGoogle, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, loginWithGoogle, register, logout, loading, sendOtp, loginWithOtp, registerWithOtp }}>
             {!loading && children}
         </AuthContext.Provider>
     );
